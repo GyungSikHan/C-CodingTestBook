@@ -5,69 +5,62 @@
 #include <stack>
 using namespace std;
 
-int CMD(char c)
-{
-    if(c == 'U')
-        return 0;
-    else if(c == 'D')
-        return 1;
-    else if(c == 'C')
-        return 2;
-    return 3;
-}
-
 string solution(int n, int k, vector<string> cmd) 
 {
     string answer = "";
-    int start = k;
     stack<int> deleted;
     vector<int> up;
     vector<int> down;
 
-    for(int i = 0; i < n; i++)
+    for(int i = 0; i < n+2; i++)
     {
         up.push_back(i-1);
         down.push_back(i+1);
     }
-    
-    for(int i = 0; i < cmd.size(); i++)
+
+    k++;
+
+    for (int i = 0; i < cmd.size(); i++)
     {
-        int temp = CMD(cmd[i][0]);
-        if(temp == 0)
+        if(cmd[i][0] == 'C')
         {
-            start = up[start];
-        }
-        else if(temp == 1)
-        {
-            start = down[start];
-        }
-        else if(temp == 2)
-        {
-            deleted.push(start);
-            if(start + 1 < n)
-                up[down[start]] = up[start];
-            if(start - 1 >= 0)
-                down[up[start]] = down[start]; 
-            
-            if(down[start] < n)
-                start = down[start];
+            deleted.push(k);
+            down[up[k]] = down[k];
+            up[down[k]] = up[k];
+
+            if(down[k] == n+1)
+                k = up[k];
             else
-                start = up[start];
+                k = down[k];
+        }
+        else if(cmd[i][0] == 'Z')
+        {
+            int temp = deleted.top();
+            down[up[temp]] = temp;
+            up[down[temp]] = temp;
+            deleted.pop();
+            
         }
         else
         {
-            int temp2 = deleted.top();
-            deleted.pop();
-            up[down[temp2]] = temp2;
-            down[up[temp2]] = temp2;
+            int temp = stoi(cmd[i].substr(2));
+            if(cmd[i][0] == 'U')
+            {
+                for(int j = 0; j < temp; j++)
+                    k = up[k];
+            }
+            else
+            {
+                for(int j = 0; j < temp; j++)
+                    k = down[k];
+            }
         }
+        /* code */
     }
-
-    for(int i = 0; i < n; i++)
-        answer += 'O';
-    while(!deleted.empty())
+    answer.append(n,'O');
+    while(deleted.empty() == false)
     {
-        answer[deleted.top()] = 'X';
+        answer[deleted.top() - 1] = 'X';
         deleted.pop();
     }
     return answer;
